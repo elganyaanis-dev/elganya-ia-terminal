@@ -33,3 +33,11 @@ Build APK par GitHub Actions. Aucune dépendance à Termux pour fonctionner.
 
 ## NOW
 Livraison : lien APK + verdict mission ELGANYA DEFY.
+
+## ETAT REEL (2026-10-30)
+- [x] Scaffold + pont natif + UI 13 ecrans + docs
+- [x] Push repo public elganyaanis-dev/terminal-os
+- [x] Build Actions VERT (run 4) + release apk-4
+- [ ] Test install sur telephone
+- [ ] P1: streaming reel, MCP client, editeur fichiers, historique persistant
+NOW: APK livre -> prochaine etape = tester sur le telephone.

@@ -41,6 +41,8 @@ S.terminal = {
       </form>
       <div class="quickcmds">
         ${['ls -la', 'pwd', 'df -h', 'uname -a', 'getprop ro.product.model', 'ps -A | head', 'aide'].map((c) => `<button class="chip" data-act="term-quick" data-cmd="${TOS.esc(c)}">${TOS.esc(c)}</button>`).join('')}
+        <button class="chip" data-act="term-beam">Tester beam (sans curl)</button>
+        <button class="chip" data-act="term-open-termux">Ouvrir Termux</button>
       </div>
       <div class="card" style="margin-top:14px">
         <div class="overline">Ce que ce terminal peut et ne peut pas faire</div>
@@ -104,6 +106,11 @@ A['term-restart'] = () => {
 A['term-quick'] = (el) => {
   const i = $('#termIn');
   if (i) { i.value = el.dataset.cmd; i.focus(); }
+};
+A['term-beam'] = () => { TOS.go('models'); setTimeout(() => A['test-beam'] && A['test-beam'](), 120); };
+A['term-open-termux'] = () => {
+  try { B.openUrl('https://f-droid.org/packages/com.termux/'); } catch (e) {}
+  TOS.toast('Ouvre Termux depuis F-Droid si non installé');
 };
 
 /* ─────────────────────────── FICHIERS ─────────────────────────── */

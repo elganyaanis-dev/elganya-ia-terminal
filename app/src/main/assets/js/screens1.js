@@ -312,6 +312,15 @@ S.models = {
 
       <div class="section">
         <div class="head"><h2>Moteurs</h2><button class="btn sm" data-act="provider-add">${TOS.icon('plus')} Ajouter</button></div>
+      <div class="card" style="margin:10px 0;background:var(--surf-2)">
+        <div class="overline">Preset Ollama Cloud · modèle beam</div>
+        <p class="meta" style="margin:6px 0 10px">Ajoute directement un moteur pointant vers Ollama Cloud. Tu n'as plus qu'à coller ta clé dans Éditer.</p>
+        <div class="row wrap">
+          <button class="btn sm" data-act="preset-cloud-native">${TOS.icon('bolt')} Natif /api</button>
+          <button class="btn sm" data-act="preset-cloud-openai">${TOS.icon('bolt')} OpenAI /v1</button>
+          <button class="btn sm ghost" data-act="test-beam">${TOS.icon('check')} Tester beam maintenant</button>
+        </div>
+      </div>
         <div class="stack">
           ${st.providers.map((p) => `
             <div class="card">
@@ -476,6 +485,62 @@ A['provider-del'] = (el) => {
   if (TOS.state.activeProvider === id) TOS.state.activeProvider = (TOS.state.providers[0] || {}).id;
   TOS.save(); TOS.closeSheet(); TOS.render();
 };
+A['preset-cloud-native'] = () => {
+  const prov = { id: TOS.uid('p'), name: 'Ollama Cloud (natif)', kind: 'ollama',
+    base: 'https://ollama.com', key: '', model: 'beam', enabled: true };
+  const idx = TOS.state.providers.findIndex((p) => p.name === prov.name);
+  if (idx >= 0) TOS.state.providers[idx] = Object.assign(TOS.state.providers[idx], prov, { id: TOS.state.providers[idx].id });
+  else TOS.state.providers.push(prov);
+  const id = TOS.state.providers.find((p)=>p.name===prov.name).id;
+  if (!TOS.state.chain.includes(id)) TOS.state.chain.push(id);
+  TOS.state.activeProvider = id;
+  TOS.save(); TOS.render(); TOS.toast('Moteur Ollama Cloud (natif) ajouté');
+};
+A['preset-cloud-openai'] = () => {
+  const prov = { id: TOS.uid('p'), name: 'Ollama Cloud (OpenAI)', kind: 'openai',
+    base: 'https://ollama.com/v1', key: '', model: 'beam', enabled: true };
+  const idx = TOS.state.providers.findIndex((p) => p.name === prov.name);
+  if (idx >= 0) TOS.state.providers[idx] = Object.assign(TOS.state.providers[idx], prov, { id: TOS.state.providers[idx].id });
+  else TOS.state.providers.push(prov);
+  const id = TOS.state.providers.find((p)=>p.name===prov.name).id;
+  if (!TOS.state.chain.includes(id)) TOS.state.chain.push(id);
+  TOS.state.activeProvider = id;
+  TOS.save(); TOS.render(); TOS.toast('Moteur Ollama Cloud (OpenAI) ajouté');
+};
+A['test-beam'] = async () => {
+  let p = TOS.state.providers.find((x) => /ollama cloud/i.test(x.name));
+  if (!p) {
+    p = { id: TOS.uid('p'), name: 'Ollama Cloud (OpenAI)', kind: 'openai', base: 'https://ollama.com/v1', key: '', model: 'beam', enabled: true };
+    TOS.state.providers.push(p);
+    TOS.state.chain.push(p.id);
+    TOS.state.activeProvider = p.id;
+    TOS.save();
+  }
+  TOS.openSheet(`<h3>Tester beam</h3><p class="meta">Colle ta clé API (si vide) puis « Lancer ».</p>
+    <div class="field" style="margin-top:10px"><label>Clé API</label><input type="password" id="tbKey" value="${TOS.esc(p.key || '')}"></div>
+    <div class="field"><label>Message test</label><input type="text" id="tbMsg" value="Dis bonjour en une phrase."></div>
+    <button class="btn primary block" style="margin-top:12px" data-act="tb-run" data-id="${p.id}">${TOS.icon('play')} Lancer</button>
+    <pre id="tbOut" style="margin-top:12px;white-space:pre-wrap;font-size:12px;color:var(--fg-2)"></pre>`);
+};
+A['tb-run'] = async (el) => {
+  const p = TOS.provider(el.dataset.id);
+  if (!p) return;
+  p.key = ($('#tbKey').value || '').trim();
+  p.model = 'beam';
+  p.enabled = true;
+  TOS.save();
+  const out = $('#tbOut');
+  if (out) out.textContent = '… requête en cours';
+  try {
+    const res = await TOS.callProvider(p, [{ role: 'user', content: ($('#tbMsg').value || 'bonjour').trim() }], { stream: false });
+    if (out) out.textContent = res || '(vide)';
+    TOS.toast('beam a répondu ✓');
+  } catch (e) {
+    if (out) out.textContent = 'ERREUR: ' + e.message;
+    TOS.toast('échec');
+  }
+};
+
 A['provider-add'] = () => {
   TOS.openSheet(`<h3>Nouveau moteur</h3>
     <div class="stack sm" style="margin-top:12px">

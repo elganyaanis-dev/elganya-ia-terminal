@@ -279,7 +279,10 @@ async function callProvider(provider, messages, opts) {
   const maxTok = opts.maxTokens || TOS.state.settings.maxTokens;
 
   if (p.kind === 'ollama') {
-    const url = trimSlash(p.base) + '/api/chat';
+    const base = trimSlash(p.base.endsWith('/api') || p.base.endsWith('/v1') ? p.base : p.base + '/api');
+    const url = base.endsWith('/api') ? base + '/chat' : base + '/chat/completions';
+    const h = { 'Content-Type': 'application/json' };
+    if (p.key) h['Authorization'] = 'Bearer ' + p.key;
     const body = JSON.stringify({
       model: opts.model || p.model || '',
       messages,
@@ -287,13 +290,13 @@ async function callProvider(provider, messages, opts) {
       options: { temperature: temp, num_predict: maxTok },
     });
     if (!stream) {
-      const r = await B.http('POST', url, { 'Content-Type': 'application/json' }, body, 180000);
+      const r = await B.http('POST', url, h, body, 180000);
       const j = safeJson(r.body, {});
       if (r.status >= 400) throw new Error(j.error || 'HTTP ' + r.status);
       return (j.message && j.message.content) || '';
     }
     let acc = '';
-    await B.stream('POST', url, { 'Content-Type': 'application/json' }, body, (chunk) => {
+    await B.stream('POST', url, h, body, (chunk) => {
       chunk.split('\n').forEach((line) => {
         const j = parseSSELine(line);
         if (!j) return;
@@ -377,7 +380,11 @@ TOS.ask = async (userMessages, opts = {}) => {
 TOS.listModels = async (provider) => {
   const p = provider;
   if (p.kind === 'ollama') {
-    const r = await B.http('GET', trimSlash(p.base) + '/api/tags', {}, '', 20000);
+    const base = trimSlash(p.base.endsWith('/api') || p.base.endsWith('/v1') ? p.base : p.base + '/api');
+    const tagsUrl = (base.endsWith('/api') ? base + '/tags' : trimSlash(p.base) + '/tags');
+    const h = {};
+    if (p.key) h['Authorization'] = 'Bearer ' + p.key;
+    const r = await B.http('GET', tagsUrl, h, '', 20000);
     if (r.status >= 400) throw new Error('HTTP ' + r.status);
     const j = safeJson(r.body, {});
     return (j.models || []).map((m) => ({ id: m.name, size: m.size, at: m.modified_at }));

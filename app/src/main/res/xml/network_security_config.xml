@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Terminal OS parle à des moteurs locaux (Ollama sur 127.0.0.1 ou le LAN)
+         et à des passerelles cloud. HTTP en clair est autorisé pour le réseau
+         local uniquement, jamais pour un domaine public. -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

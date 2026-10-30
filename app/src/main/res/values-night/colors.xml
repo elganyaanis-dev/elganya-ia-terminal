@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ink">#08060C</color>
+    <color name="surface">#120E1C</color>
+    <color name="card">#171225</color>
+    <color name="pink">#FF5CA8</color>
+    <color name="violet">#C05CFF</color>
+    <color name="text_primary">#F6F1FC</color>
+    <color name="text_secondary">#A79DBB</color>
+</resources>

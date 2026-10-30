@@ -1,4 +1,4 @@
-package com.elganya.terminalos;
+package com.elganya.orchestrator;
 
 import android.app.Activity;
 import android.content.Intent;

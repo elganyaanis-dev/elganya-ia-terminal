@@ -11,10 +11,10 @@
   --card-2:     #1D1830;
   --line:       rgba(255, 255, 255, .07);
   --line-2:     rgba(255, 255, 255, .12);
-  --pink:       #FF4D9D;
+  --pink:       #00FF88;
   --pink-2:     #FF7DBB;
   --pink-soft:  rgba(255, 77, 157, .12);
-  --violet:     #B24BF3;
+  --violet:     #1B5E20;
   --violet-soft: rgba(178, 75, 243, .12);
   --cyan:       #57E3FF;
   --ok:         #3ED598;
@@ -23,7 +23,7 @@
   --text:       #F4EFFB;
   --text-2:     #A79DBB;
   --text-3:     #7A6F8E;
-  --grad:       linear-gradient(135deg, #FF4D9D 0%, #B24BF3 100%);
+  --grad:       linear-gradient(135deg, #00FF88 0%, #1B5E20 100%);
   --radius:     18px;
   --radius-sm:  12px;
   --pad:        16px;

@@ -1,11 +1,11 @@
 plugins { id 'com.android.application' }
 
 android {
-    namespace 'com.elganya.terminalos'
+    namespace 'com.elganya.orchestrator'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'com.elganya.terminalos'
+        applicationId 'com.elganya.orchestrator'
         minSdk 26
         targetSdk 34
         versionCode 1

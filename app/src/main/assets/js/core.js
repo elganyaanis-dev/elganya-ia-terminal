@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Terminal OS by Elganya — noyau (core.js)
+   Elganya Orchestrator — noyau (core.js)
    État persistant · pont natif · routeur · UI · moteur de chat
    Aucune dépendance externe : fonctionne hors ligne dans le WebView.
    ═══════════════════════════════════════════════════════════════ */
@@ -190,19 +190,21 @@ TOS.onStreamEnd = (id, err) => {
 const STATE_KEY = 'state.v1';
 
 const DEFAULT_STATE = () => ({
+  auth: { user: null, role: 'guest', name: '' },
   settings: {
     stream: true,
     temperature: 0.7,
     maxTokens: 2048,
     haptics: true,
     systemPrompt:
-      "Tu es l'orchestrateur de Terminal OS by Elganya, un environnement de développement agentique sur Android. " +
+      "Tu es l'orchestrateur de Elganya Orchestrator, un environnement de développement agentique sur Android. " +
       "Tu réponds en français, tu es concis, tu proposes des commandes concrètes et tu signales clairement toute action risquée.",
   },
   providers: [
     { id: 'ollama-local', name: 'Ollama local', kind: 'ollama', base: 'http://127.0.0.1:11434', key: '', model: '', enabled: true },
     { id: 'ollama-lan', name: 'Ollama (PC via Wi-Fi)', kind: 'ollama', base: 'http://192.168.1.10:11434', key: '', model: '', enabled: false },
     { id: 'openai-compat', name: 'Passerelle cloud (OpenAI-compatible)', kind: 'openai', base: 'https://api.openai.com/v1', key: '', model: 'gpt-4o-mini', enabled: false },
+    { id: 'ollama-cloud', name: 'Ollama Cloud (beam)', kind: 'openai', base: 'https://ollama.com/v1', key: '', model: 'beam', enabled: false },
   ],
   chain: ['ollama-local', 'openai-compat'],
   agents: [
@@ -249,6 +251,7 @@ TOS.load = () => {
   // fusion défensive : les nouvelles clés apparaissent sans casser l'existant
   TOS.state = Object.assign(base, saved);
   TOS.state.settings = Object.assign(base.settings, saved.settings || {});
+  TOS.state.auth = Object.assign(base.auth, saved.auth || {});
   ['providers', 'agents', 'skills', 'mcp', 'memory', 'history', 'media', 'chat', 'chain'].forEach((k) => {
     if (!Array.isArray(TOS.state[k])) TOS.state[k] = base[k];
   });

@@ -65,3 +65,11 @@ Le JS n'a pas accès au réseau « brut » de façon fiable dans un WebView
 (`file://`, CORS, cleartext, cookies, certificats). Le pont natif a tous les
 droits du manifeste et aucune de ces limites. C'est la raison pour laquelle
 la couche IA de Terminal OS est en Java, et l'interface en HTML.
+
+## Cas Ollama Cloud (API key) — validé 2026-10-30
+- Endpoint direct : `https://ollama.com/api` (natif) ou `https://ollama.com/v1` (OpenAI-compatible).
+- Auth : header `Authorization: Bearer <OLLAMA_API_KEY>` — aucune installation requise.
+- Nom du modèle côté API = celui de `https://ollama.com/api/tags` (ex. `beam`) ; le suffixe `:cloud`
+  ne sert que dans le CLI/app Ollama local (`ollama run beam:cloud`).
+- Dans l'app : type **OpenAI-compatible**, base `https://ollama.com/v1`, clé = API key, modèle `beam`.
+- Le provider de type "ollama" n'envoie pas encore le header d'auth (à corriger en P1).

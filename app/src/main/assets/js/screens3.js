@@ -569,3 +569,68 @@ S.cipher = {
     };
   }
 };
+
+/* ───────── RUNTIME IA ───────── */
+S.runtime = {
+  title: 'Runtime IA (modèles locaux)',
+  render() {
+    return `
+      <div class="card">
+        <div class="overline">Téléchargement HuggingFace</div>
+        <p class="meta" style="margin:6px 0 0">Entrez l'URL directe d'un fichier modèle (.gguf) ou une URL HF resolve. Téléchargement géré par Android (Play/Pause/Stop).</p>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="field"><label>URL modèle (.gguf)</label><input id="rtUrl" value="https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"></div>
+        <div class="field"><label>Nom fichier</label><input id="rtName" value="tinyllama.Q4_K_M.gguf"></div>
+        <div class="row wrap" style="margin-top:10px">
+          <button class="btn primary" id="rtDl">Télécharger</button>
+          <button class="btn" id="rtPlay">Play</button>
+          <button class="btn ghost" id="rtPause">Pause</button>
+          <button class="btn danger" id="rtStop">Stop</button>
+        </div>
+        <pre id="rtStatus" style="margin-top:12px;font-size:12px;white-space:pre-wrap"></pre>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="overline">Modèle local chargé</div>
+        <pre id="rtLocal" style="white-space:pre-wrap;font-size:12px"></pre>
+      </div>`;
+  },
+  bind(root) {
+    let currentId = -1;
+    const st = root.querySelector('#rtStatus');
+    const showLocal = () => {
+      const p = B.localModelPath();
+      root.querySelector('#rtLocal').textContent = p || '(aucun)';
+    };
+    showLocal();
+    root.querySelector('#rtDl').onclick = () => {
+      const url = root.querySelector('#rtUrl').value.trim();
+      const name = root.querySelector('#rtName').value.trim();
+      const id = B.downloadModel(url, name);
+      currentId = id;
+      st.textContent = 'download id=' + id;
+    };
+    root.querySelector('#rtPlay').onclick = () => {
+      const url = root.querySelector('#rtUrl').value.trim();
+      const name = root.querySelector('#rtName').value.trim();
+      const id = (currentId > 0 ? currentId : B.downloadModel(url, name));
+      currentId = id;
+      if (id<=0) { st.textContent='echec start'; return; }
+      const poll = setInterval(()=> {
+        const s = B.downloadStatus(id);
+        st.textContent = s;
+        try {
+          const j=JSON.parse(s);
+          if (j.state === 'done' || j.state === 'failed') clearInterval(poll);
+        } catch(e){}
+      }, 1500);
+      st.textContent = 'demarre ' + id;
+    };
+    root.querySelector('#rtPause').onclick = () => {
+      if (currentId>0) { B.stopDownload(currentId); st.textContent='pause/stop ' + currentId; }
+    };
+    root.querySelector('#rtStop').onclick = () => {
+      if (currentId>0) { B.stopDownload(currentId); currentId=-1; st.textContent='stop'; }
+    };
+  }
+};

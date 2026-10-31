@@ -449,4 +449,79 @@ public class WebBridge {
         } catch (Exception ignored) {}
         return "sdk<30";
     }
+    private long lastDownloadId = -1;
+    private String lastDownloadFile = "";
+
+    @JavascriptInterface
+    public long downloadModel(String url, String filename) {
+        if (url == null || url.trim().isEmpty()) return -1;
+        if (filename == null || filename.trim().isEmpty()) filename = "model.bin";
+        try {
+            android.app.DownloadManager dm = (android.app.DownloadManager) activity.getSystemService(android.content.Context.DOWNLOAD_SERVICE);
+            if (dm == null) return -1;
+            android.net.Uri u = android.net.Uri.parse(url.trim());
+            android.app.DownloadManager.Request req = new android.app.DownloadManager.Request(u);
+            req.setTitle("Téléchargement modèle (HuggingFace)");
+            req.setDescription(filename);
+            req.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE);
+            req.setDestinationInExternalFilesDir(activity, "models", filename);
+            req.setAllowedOverMetered(true);
+            req.setAllowedOverRoaming(true);
+            lastDownloadId = dm.enqueue(req);
+            lastDownloadFile = filename;
+            return lastDownloadId;
+        } catch (Exception e) { return -1; }
+    }
+
+    @JavascriptInterface
+    public String downloadStatus(long id) {
+        if (id < 0) return "{\"state\":\"none\"}";
+        try {
+            android.app.DownloadManager dm = (android.app.DownloadManager) activity.getSystemService(android.content.Context.DOWNLOAD_SERVICE);
+            if (dm == null) return "{\"state\":\"none\"}";
+            android.database.Cursor c = dm.query(new android.app.DownloadManager.Query().setFilterById(id));
+            if (c != null && c.moveToFirst()) {
+                int si = c.getColumnIndex(android.app.DownloadManager.COLUMN_STATUS);
+                int tot = c.getColumnIndex(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                int dl = c.getColumnIndex(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                int st = (si>=0)? c.getInt(si):0;
+                long tBytes = (tot>=0)? c.getLong(tot):0;
+                long dBytes = (dl>=0)? c.getLong(dl):0;
+                c.close();
+                int pct = tBytes>0 ? (int)(dBytes*100L/tBytes) : 0;
+                String state = st==android.app.DownloadManager.STATUS_SUCCESSFUL?"done":st==android.app.DownloadManager.STATUS_FAILED?"failed":"running";
+                return "{\"state\":\""+state+"\",\"pct\":"+pct+",\"downloaded\":"+dBytes+",\"total\":"+tBytes+"}";
+            }
+            if (c != null) c.close();
+        } catch (Exception ignored) {}
+        return "{\"state\":\"unknown\"}";
+    }
+
+    @JavascriptInterface
+    public void pauseDownload(long id) {
+        // Android DownloadManager has no direct pause; cancel and remove.
+        try {
+            android.app.DownloadManager dm = (android.app.DownloadManager) activity.getSystemService(android.content.Context.DOWNLOAD_SERVICE);
+            if (dm != null && id > 0) dm.remove(id);
+        } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void stopDownload(long id) {
+        try {
+            android.app.DownloadManager dm = (android.app.DownloadManager) activity.getSystemService(android.content.Context.DOWNLOAD_SERVICE);
+            if (dm != null && id > 0) dm.remove(id);
+        } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void startLocalModel(String path) {
+        try { prefs.edit().putString("localModelPath", path).apply(); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public String localModelPath() {
+        return prefs.getString("localModelPath", "");
+    }
+
 }

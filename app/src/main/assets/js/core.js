@@ -68,6 +68,7 @@ TOS.nav = [
   ]},
   { group: 'Moteurs', items: [
     { id: 'models', label: 'Modèles', icon: 'cpu' },
+    { id: 'runtime', label: 'Runtime IA', icon: 'play' },
     { id: 'skills', label: 'Skills', icon: 'sparkles' },
     { id: 'mcp', label: 'Plugins · MCP', icon: 'plug' },
     { id: 'memory', label: 'Mémoire', icon: 'brain' },
@@ -163,6 +164,10 @@ const B = (TOS.bridge = {
   share(t) { if (NATIVE) { try { ELG.share(t); return; } catch (e) {} } },
   openUrl(u) { if (NATIVE) { try { ELG.openUrl(u); return; } catch (e) {} } window.open(u, '_blank'); },
   allowStorage() { if (NATIVE) { try { ELG.allowStorage(); return; } catch (e) {} } },
+  downloadModel(url, name) { if (NATIVE) { try { return ELG.downloadModel(url, name); } catch (e){} } return -1; },
+  downloadStatus(id) { if (NATIVE) { try { return ELG.downloadStatus(id); } catch (e){} } return '\"state\":\"sim\"'; },
+  stopDownload(id) { if (NATIVE) { try { ELG.stopDownload(id); } catch (e){} } },
+  localModelPath() { if (NATIVE) { try { return ELG.localModelPath(); } catch(e){} } return ''; },
   storageStatus() { if (NATIVE) { try { return ELG.storageStatus(); } catch (e) {} } return 'sim'; },
   exitApp() { if (NATIVE) { try { ELG.exitApp(); } catch (e) {} } },
   fsHome() { if (NATIVE) { try { return ELG.fsHome(); } catch (e) {} } return '~/terminal-os'; },

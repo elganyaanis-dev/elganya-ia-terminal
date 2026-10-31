@@ -424,6 +424,7 @@ public class WebBridge {
     @JavascriptInterface
     public void exitApp() {
         activity.runOnUiThread(() -> activity.moveTaskToBack(true));
+    }
 
     @JavascriptInterface
     public void allowStorage() {

@@ -63,6 +63,8 @@ TOS.nav = [
     { id: 'cockpit', label: 'Cockpit', icon: 'grid' },
     { id: 'chat', label: 'Chat IA', icon: 'chat' },
     { id: 'agents', label: 'Orchestrateur', icon: 'network' },
+    { id: 'fabric', label: 'LUMEN Fabric', icon: 'network' },
+    { id: 'cipher', label: 'Chiffre Lab', icon: 'key' },
   ]},
   { group: 'Moteurs', items: [
     { id: 'models', label: 'Modèles', icon: 'cpu' },

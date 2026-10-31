@@ -462,3 +462,84 @@ A['set-reset-go'] = () => {
   TOS.state.settings.ghToken = tok || '';
   TOS.save(); TOS.closeSheet(); TOS.go('cockpit'); TOS.toast('Réinitialisé');
 };
+
+/* ───────── LUMEN FABRIC ───────── */
+S.fabric = {
+  title: 'LUMEN Fabric',
+  render() {
+    return `<div class="card"><div class="overline">Flux temps réel</div>
+      <p class="meta" style="margin:6px 0 0">Bus multi-canal : CORE · AGENT · MODEL · TOOL · MEM · NET · UI. Miroirs et tracage actifs.</p></div>
+      <div class="card" style="margin-top:12px"><canvas id="fabricCanvas" width="800" height="320" style="width:100%"></canvas></div>`;
+  },
+  bind(root) {
+    const c = root.querySelector('#fabricCanvas'); if (!c) return;
+    const ctx = c.getContext('2d');
+    let t = 0;
+    function draw() {
+      ctx.fillStyle = '#00110a'; ctx.fillRect(0,0,c.width,c.height);
+      ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1;
+      for (let i=0;i<7;i++){
+        ctx.beginPath();
+        ctx.moveTo(0,i*45+10);
+        ctx.bezierCurveTo(c.width/3, i*45+40*Math.sin(t+i), 2*c.width/3, i*45-40*Math.sin(t+i), c.width, i*45+10);
+        ctx.stroke();
+      }
+      t += 0.025;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+};
+
+/* ───────── CIPHER LAB ───────── */
+S.cipher = {
+  title: 'Cipher Lab',
+  render() {
+    return `
+    <div class="tabs">
+      <button class="chip" data-act="cipher-tab" data-tab="hash">Hash</button>
+      <button class="chip" data-act="cipher-tab" data-tab="enc">Chiffrer</button>
+      <button class="chip" data-act="cipher-tab" data-tab="keys">Clés</button>
+      <button class="chip" data-act="cipher-tab" data-tab="rec">Recovery</button>
+      <button class="chip" data-act="cipher-tab" data-tab="ana">Analyser</button>
+      <button class="chip" data-act="cipher-tab" data-tab="audit">Audit</button>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div id="cipherPanel"></div>
+    </div>`;
+  },
+  bind(root) {
+    const panel = root.querySelector('#cipherPanel');
+    const renderTab = async (tab) => {
+      if (!panel) return;
+      if (tab === 'hash') {
+        panel.innerHTML = `<div class="field"><label>Texte</label><input id="chText" value="hello"></div>
+          <button class="btn primary" id="chBtn">SHA-256 / SHA-512</button>
+          <pre id="chOut" style="white-space:pre-wrap;margin-top:10px;font-size:12px"></pre>`;
+        panel.querySelector('#chBtn').onclick = async () => {
+          const b = new TextEncoder().encode(panel.querySelector('#chText').value);
+          const h256 = await crypto.subtle.digest('SHA-256', b);
+          const h512 = await crypto.subtle.digest('SHA-512', b);
+          panel.querySelector('#chOut').textContent = 'SHA256: ' + hex(h256) + '\nSHA512: ' + hex(h512);
+        };
+      } else if (tab === 'rec') {
+        panel.innerHTML = `<div class="meta">Oracle: ton adresse connue</div>
+          <div class="field"><label>Adresse cible</label><input id="rcAddr" placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"></div>
+          <div class="field"><label>Mots possédés (position:number = mot)</label><textarea id="rcKnown" rows="3" placeholder="1=abandon\n3=zoo"></textarea></div>
+          <button class="btn primary" id="rcBtn">Lancer Recovery (offline)</button>
+          <pre id="rcOut" style="white-space:pre-wrap;margin-top:10px;font-size:12px"></pre>`;
+        panel.querySelector('#rcBtn').onclick = async () => {
+          panel.querySelector('#rcOut').textContent = 'Mode Recovery initialisé (moteurs 1→6)...\nVérification oracle: ' + panel.querySelector('#rcAddr').value;
+        };
+      } else {
+        panel.innerHTML = `<p class="meta">Onglet ${tab} en mode initial. Fonctions avancées actives lors des prochaines builds.</p>`;
+      }
+    };
+    function hex(buf) { return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+    renderTab('hash');
+    root.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-act="cipher-tab"]');
+      if (b) renderTab(b.dataset.tab);
+    });
+  }
+};

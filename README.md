@@ -1,14 +1,18 @@
 # Elganya Orchestrator
 
-Surcouche agentic **Android** : tableau de bord multi-modèles (local + LAN + cloud),
-orchestrateur IA, terminal, fichiers, skills, MCP, mémoire, médias, DevHub.
-Style : cyberpunk moderne · matrice verte · lignes fines.
+Super-app IA agentic pour Android (orchestrateur de modeles local/cloud/LAN, terminal, IA, sécurité).
 
-## Points forts
-- Login email/Google (démo) + compte admin `elganya / elganya`.
-- Gateway IA avec failover : Ollama local, Ollama LAN, Ollama Cloud (beam).
-- Auth directe vers Ollama Cloud (`https://ollama.com/v1`, Bearer token) — pas de curl requis.
-- Build APK via GitHub Actions, déploiement release automatique.
+- Repo : https://github.com/elganyaanis-dev/elganya-ia-terminal
+- Build : GitHub Actions
+- APK : releases apk-N
 
-## Build
-Push sur `main` déclenche `.github/workflows/build.yml` → APK release `apk-<run>`.
+## Mode IA
+- Ollama Cloud beam via API.
+
+## Securite
+- Admin compte elganya.
+- Secrets stockes localement, chiffrés.
+- Terminal sandbox.
+
+## Historique
+voir docs/HISTORY.md

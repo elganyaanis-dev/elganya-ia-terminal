@@ -424,8 +424,6 @@ public class WebBridge {
     @JavascriptInterface
     public void exitApp() {
         activity.runOnUiThread(() -> activity.moveTaskToBack(true));
-    }
-}
 
     @JavascriptInterface
     public void allowStorage() {
@@ -450,3 +448,4 @@ public class WebBridge {
         } catch (Exception ignored) {}
         return "sdk<30";
     }
+}

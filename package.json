@@ -1,0 +1,14 @@
+{
+  "name": "elganya-orchestrator",
+  "version": "2.0.0",
+  "description": "Elganya Orchestrator: agentic Android AI surface with terminal, cipher lab and MCP",
+  "private": true,
+  "dependencies": {
+    "claude-code-termux": "latest",
+    "zyvo": "latest"
+  },
+  "scripts": {
+    "ai-install-zyvo": "curl -fsSL https://raw.githubusercontent.com/zyvo9/ZYVO-AI/main/install.sh | bash",
+    "ai-install-claude": "curl -fsSL https://raw.githubusercontent.com/findingjimoh/claude-cli-termux/main/scripts/setup-termux.sh | bash"
+  }
+}

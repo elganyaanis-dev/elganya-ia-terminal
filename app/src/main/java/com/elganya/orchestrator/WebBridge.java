@@ -426,3 +426,27 @@ public class WebBridge {
         activity.runOnUiThread(() -> activity.moveTaskToBack(true));
     }
 }
+
+    @JavascriptInterface
+    public void allowStorage() {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                Intent i = new Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                activity.startActivity(i);
+            } else {
+                activity.startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:" + activity.getPackageName())));
+            }
+        } catch (Exception e) {
+            activity.runOnUiThread(() -> { /* ignore */ });
+        }
+    }
+
+    @JavascriptInterface
+    public String storageStatus() {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                return android.os.Environment.isExternalStorageManager() ? "granted" : "denied";
+            }
+        } catch (Exception ignored) {}
+        return "sdk<30";
+    }

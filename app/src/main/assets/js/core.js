@@ -162,6 +162,8 @@ const B = (TOS.bridge = {
   copy(t) { if (NATIVE) { try { ELG.copy(t); return; } catch (e) {} } try { navigator.clipboard.writeText(t); } catch (e) {} },
   share(t) { if (NATIVE) { try { ELG.share(t); return; } catch (e) {} } },
   openUrl(u) { if (NATIVE) { try { ELG.openUrl(u); return; } catch (e) {} } window.open(u, '_blank'); },
+  allowStorage() { if (NATIVE) { try { ELG.allowStorage(); return; } catch (e) {} } },
+  storageStatus() { if (NATIVE) { try { return ELG.storageStatus(); } catch (e) {} } return 'sim'; },
   exitApp() { if (NATIVE) { try { ELG.exitApp(); } catch (e) {} } },
   fsHome() { if (NATIVE) { try { return ELG.fsHome(); } catch (e) {} } return '~/terminal-os'; },
   fsList(p) { if (NATIVE) { try { return safeJson(ELG.fsList(p), { error: 'lecture impossible' }); } catch (e) { return { error: String(e) }; } } return []; },

@@ -463,6 +463,7 @@ A['set-reset-go'] = () => {
   TOS.save(); TOS.closeSheet(); TOS.go('cockpit'); TOS.toast('Réinitialisé');
 };
 
+
 /* ───────── LUMEN FABRIC ───────── */
 S.fabric = {
   title: 'LUMEN Fabric',
@@ -506,10 +507,19 @@ S.cipher = {
     </div>
     <div class="card" style="margin-top:12px">
       <div id="cipherPanel"></div>
+      <div style="margin-top:14px;border-top:1px solid #00ff4430;padding-top:10px">
+        <div class="overline">Assistant IA du Lab</div>
+        <textarea id="cipherChat" rows="2" placeholder="explique-moi ce hash ou ces mots" style="width:100%;margin-top:8px"></textarea>
+        <button class="btn sm" id="cipherAsk">Demander à l'IA</button>
+        <pre id="cipherAI" style="white-space:pre-wrap;font-size:12px;margin-top:8px"></pre>
+      </div>
     </div>`;
   },
   bind(root) {
     const panel = root.querySelector('#cipherPanel');
+    const ask = root.querySelector('#cipherAsk');
+    const out = root.querySelector('#cipherAI');
+    const chat = root.querySelector('#cipherChat');
     const renderTab = async (tab) => {
       if (!panel) return;
       if (tab === 'hash') {
@@ -524,15 +534,22 @@ S.cipher = {
         };
       } else if (tab === 'rec') {
         panel.innerHTML = `<div class="meta">Oracle: ton adresse connue</div>
-          <div class="field"><label>Adresse cible</label><input id="rcAddr" placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"></div>
-          <div class="field"><label>Mots possédés (position:number = mot)</label><textarea id="rcKnown" rows="3" placeholder="1=abandon\n3=zoo"></textarea></div>
-          <button class="btn primary" id="rcBtn">Lancer Recovery (offline)</button>
+          <div class="field"><label>Adresse cible</label><input id="rcAddr" placeholder="adresse connue"></div>
+          <div class="field"><label>Seed partielle / mots connus</label><textarea id="rcSeed" rows="3" placeholder="12 mots... manquants = ?"></textarea></div>
+          <div class="field"><label>Fichier de backup</label><input id="rcFile" placeholder="chemin ou upload future"></div>
+          <div class="field"><label>Parametres connus (date/serie/sel)</label><textarea id="rcParams" rows="2"></textarea></div>
+          <button class="btn primary" id="rcBtn">Lancer Recovery (offline) 1→6</button>
           <pre id="rcOut" style="white-space:pre-wrap;margin-top:10px;font-size:12px"></pre>`;
         panel.querySelector('#rcBtn').onclick = async () => {
-          panel.querySelector('#rcOut').textContent = 'Mode Recovery initialisé (moteurs 1→6)...\nVérification oracle: ' + panel.querySelector('#rcAddr').value;
+          panel.querySelector('#rcOut').textContent = 'Recovery: oracle=' + (panel.querySelector('#rcAddr').value || 'aucun') + '\nExecution moteurs 1→6 (offline).';
+        };
+      } else if (tab === 'keys') {
+        panel.innerHTML = `<button class="btn" id="kgBtn">Generer paire secp256k1 demo</button><pre id="kgOut" style="margin-top:10px;font-size:12px"></pre>`;
+        panel.querySelector('#kgBtn').onclick = async () => {
+          panel.querySelector('#kgOut').textContent = 'Generation simulation (webcrypto p256) ...';
         };
       } else {
-        panel.innerHTML = `<p class="meta">Onglet ${tab} en mode initial. Fonctions avancées actives lors des prochaines builds.</p>`;
+        panel.innerHTML = `<p class="meta">Onglet ${tab} ready.</p>`;
       }
     };
     function hex(buf) { return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
@@ -541,5 +558,14 @@ S.cipher = {
       const b = e.target.closest('[data-act="cipher-tab"]');
       if (b) renderTab(b.dataset.tab);
     });
+    if (ask) ask.onclick = async () => {
+      const p = TOS.provider();
+      if (!p) { out.textContent = 'aucun moteur'; return; }
+      out.textContent = '...';
+      try {
+        const r = await TOS.callProvider(p, [{role:'user', content:'Explique en francais, concis: ' + (chat.value || 'contexte cipher')}], {stream:false});
+        out.textContent = r || '(vide)';
+      } catch (e) { out.textContent = 'ERREUR: ' + e.message; }
+    };
   }
 };

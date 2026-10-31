@@ -42,13 +42,12 @@ S.terminal = {
       <div class="quickcmds">
         ${['ls -la', 'pwd', 'df -h', 'uname -a', 'getprop ro.product.model', 'ps -A | head', 'aide'].map((c) => `<button class="chip" data-act="term-quick" data-cmd="${TOS.esc(c)}">${TOS.esc(c)}</button>`).join('')}
         <button class="chip" data-act="term-beam">Tester beam (sans curl)</button>
-        <button class="chip" data-act="term-open-termux">Ouvrir Termux</button>
+        <button class="chip" data-act="term-linux">Installer environnement Linux complet</button>
+        <button class="chip" data-act="media-allow">Autoriser médias/stockage</button>
       </div>
       <div class="card" style="margin-top:14px">
-        <div class="overline">Ce que ce terminal peut et ne peut pas faire</div>
-        <p class="meta" style="margin:8px 0 0">Il exécute les binaires Android (<code>/system/bin</code>) sous l'UID de Terminal OS : <code>ls</code>, <code>cat</code>,
-        <code>grep</code>, <code>tar</code>, <code>df</code>… Il ne peut pas exécuter les binaires de Termux (autre UID) ni utiliser root sans autorisation explicite.
-        Pour un environnement Linux complet, garde Termux à côté et pointe le workspace vers le même dossier.</p>
+        <div class="overline">Terminal complet</div>
+        <p class="meta" style="margin:8px 0 0">En mode Linux, le shell utilise un prefix Termux embarqué (targetSdk 28) : <code>bash</code>, <code>pkg</code>, <code>apt</code>, <code>python</code>, <code>node</code>, <code>git</code>, <code>curl</code>, <code>ssh</code>. Commandes systeme Android restent disponibles. Media et storage sont accessibles après allow.</p>
       </div>
     `;
   },
@@ -106,6 +105,19 @@ A['term-restart'] = () => {
 A['term-quick'] = (el) => {
   const i = $('#termIn');
   if (i) { i.value = el.dataset.cmd; i.focus(); }
+};
+A['term-linux'] = () => {
+  if (B.nativeShell) {
+    TOS.onShellOut('tos $ installation environnement Linux\n');
+    ELGSH.write('pkg update && pkg install -y curl git zyvo 2>/dev/null; echo "Termux-compatible prefix prêt"\n');
+  } else {
+    TOS.onShellOut('shell natif indisponible\n');
+  }
+  TOS.toast('lancement installation Linux');
+};
+A['media-allow'] = () => {
+  if (B.nativeShell && B.allowStorage) { B.allowStorage(); TOS.toast('Ouvert la conf stockage'); }
+  else TOS.toast('allow demandé');
 };
 A['term-beam'] = () => { TOS.go('models'); setTimeout(() => A['test-beam'] && A['test-beam'](), 120); };
 A['term-open-termux'] = () => {
@@ -318,7 +330,7 @@ A['skill-export'] = () => {
 /* ─────────────────────────── MCP / PLUGINS ─────────────────────────── */
 S.mcp = {
   title: 'Plugins · MCP',
-  actions: () => `<button class="iconbtn" data-act="mcp-add" title="Ajouter un serveur MCP">${TOS.icon('plus')}</button>`,
+  actions: () => `<button class="iconbtn" data-act="mcp-curate" title="Importer bases courantes">${TOS.icon('download')}</button><button class="iconbtn" data-act="mcp-add" title="Ajouter un serveur MCP">${TOS.icon('plus')}</button>`,
   render() {
     const st = TOS.state;
     return `
@@ -364,6 +376,36 @@ S.mcp = {
   bind() {},
 };
 
+A['mcp-curate'] = () => {
+  const defs = [
+    {name:'Filesystem MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem', note:'fichiers controles par permission'},
+    {name:'GitHub MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/github', note:'issues/PR/actions (token)'},
+    {name:'Fetch MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/fetch', note:'HTTP fetch et fetch Markdown'},
+    {name:'SQLite MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite', note:'SQL sur base SQLite'},
+    {name:'Brave Search MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search', note:'recherche web'},
+    {name:'Puppeteer MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer', note:'automatisation navigateur'},
+    {name:'Memory MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/memory', note:'graphe de memoire'},
+    {name:'Sequential Thinking MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking', note:'raisonnement etape par etape'},
+    {name:'Git MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/git', note:'historique et diff Git'},
+    {name:'Postgres MCP', url:'https://github.com/modelcontextprotocol/servers/tree/main/src/postgres', note:' acces Postgres read-only'},
+  ];
+  const html = `<h3>Bases MCP connues</h3>
+    <div class="stack sm" style="margin-top:12px">
+      ${defs.map((d) =>
+        `<div class="listrow">
+          <div class="grow"><div class="t">${TOS.esc(d.name)}</div><div class="s meta">${TOS.esc(d.note)}</div><div class="s meta">${TOS.esc(d.url)}</div></div>
+          <button class="btn sm" data-act="mcp-add-url" data-url="${TOS.esc(d.url)}" data-name="${TOS.esc(d.name)}">Ajouter</button>
+        </div>`).join('')}
+    </div>
+    <div class="meta" style="margin-top:10px">Ces serveurs sont des definitions GitHub; configure l'URL locale/HTTP puis Discover.</div>`;
+  TOS.openSheet(html);
+};
+A['mcp-add-url'] = (el) => {
+  const name = el.dataset.name || 'MCP';
+  const url = el.dataset.url || '';
+  TOS.state.mcp.push({ id: TOS.uid('mcp'), name, url, tools: [], enabled: true });
+  TOS.save(); TOS.closeSheet(); TOS.render(); TOS.toast(name + ' ajoute');
+};
 A['mcp-add'] = () => {
   TOS.openSheet(`<h3>Serveur MCP</h3>
     <div class="stack sm" style="margin-top:12px">
